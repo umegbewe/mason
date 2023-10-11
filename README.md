@@ -25,7 +25,7 @@ secrets:
 
 - Download [binaries](https://github.com/umegbewe/mason/releases)
 
-- Build:
+- Go install:
 ```
 go install github.com/umegbewe/mason@latest
 ```
