@@ -1,0 +1,12 @@
+secrets:
+  /example/postgres/secret:
+    value:
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: password
+    tags:
+      environment: local
+  /example/redis/secret:
+    value:
+      REDIS_PASSWORD: password
+    tags:
+      environment: local
