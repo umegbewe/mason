@@ -1,0 +1,46 @@
+project_name: mason
+env:
+  - CGO_ENABLED=0
+before:
+  hooks:
+    - go mod download
+builds:
+- binary: mason
+  ldflags: -s -w -X github.com/umegbewe/mason/app.version={{ .RawVersion }}
+  goos:
+    - windows
+    - darwin
+    - linux
+    - freebsd
+    - openbsd
+    - netbsd
+  goarch:
+    - "386"
+    - amd64
+    - arm
+    - arm64
+  ignore:
+    - goos: freebsd
+      goarch: arm
+      goarm: 6
+    - goos: freebsd
+      goarch: arm64
+    - goos: openbsd
+      goarch: arm
+      goarm: 6
+archives:
+- name_template: >-
+    {{ .ProjectName }}_
+    {{- .Version }}_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "386" }}i386
+    {{- else }}{{ .Arch }}{{ end }}
+    {{- if .Arm }}v{{ .Arm }}{{ end }}
+  format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
+  files:
+    - none*
+  wrap_in_directory: false
