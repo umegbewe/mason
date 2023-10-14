@@ -5,20 +5,28 @@ I have been working with lots of secrets in AWS Secrets Manager the past few day
 
 I built ``mason`` to make stuff easier as simple as defining secrets this way
 
-```
+```yaml
 secrets:
+   # create key value secret
   /example/postgres/secret:
-    value:
+    key_value:
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: password
     tags:
       environment: local
-  /example/redis/secret:
-    value:
-      REDIS_PASSWORD: password
+  # create plain text secret
+  /example/nas/secret-lyric:
+    plaintext: |
+      Early on the wakeup
+      Cunning as the father of the twelve sons of jacob
+      Shake up the world cake crumbs
     tags:
-      environment: local
-
+     track: fever
+  # create file secret
+  /example/file/secret:
+    file: "example.json"
+    tags:
+      file-type: json
 ```
 
 ## **Install**
