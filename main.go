@@ -16,10 +16,10 @@ import (
 
 type Config struct {
 	Secrets map[string]struct {
-		KeyValue   map[string]string `yaml:"key_value,omitempty"`
-		PlainValue string            `yaml:"plain_value,omitempty"`
-		File       string            `yaml:"file,omitempty"`
-		Tags       map[string]string `yaml:"tags"`
+		KeyValue  map[string]string `yaml:"key_value,omitempty"`
+		PlainText string            `yaml:"plaintext,omitempty"`
+		File      string            `yaml:"file,omitempty"`
+		Tags      map[string]string `yaml:"tags"`
 	} `yaml:"secrets"`
 }
 
@@ -81,8 +81,8 @@ func validateConfig(config Config) error {
 			return fmt.Errorf("secret '%s' has both KeyValue and File set, which is not allowed", name)
 		}
 
-		if secret.KeyValue == nil && secret.File == "" && secret.PlainValue == "" {
-			return fmt.Errorf("secret '%s' must have either KeyValue, File, or PlainValue set", name)
+		if secret.KeyValue == nil && secret.File == "" && secret.PlainText == "" {
+			return fmt.Errorf("secret '%s' must have either KeyValue, File, or PlainText set", name)
 		}
 
 		for tagKey, tagValue := range secret.Tags {
@@ -124,7 +124,7 @@ func manageSecrets(svc *secretsmanager.SecretsManager, config Config, kms *strin
 			}
 			secretValue = string(content)
 		} else {
-			secretValue = secret.PlainValue
+			secretValue = secret.PlainText
 		}
 
 		tags := make([]*secretsmanager.Tag, 0, len(secret.Tags))
