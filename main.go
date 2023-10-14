@@ -18,6 +18,7 @@ type Config struct {
 	Secrets map[string]struct {
 		KeyValue   map[string]string `yaml:"key_value,omitempty"`
 		PlainValue string            `yaml:"plain_value,omitempty"`
+		File       string            `yaml:"file,omitempty"`
 		Tags       map[string]string `yaml:"tags"`
 	} `yaml:"secrets"`
 }
@@ -35,7 +36,7 @@ func main() {
 
 	data, err := ioutil.ReadFile(cli.Config)
 	if err != nil {
-		log.Printf("Failed to read config: %v", err)
+		log.Fatalf("Failed to read config: %v", err)
 	}
 
 	var config Config
@@ -91,6 +92,13 @@ func manageSecrets(svc *secretsmanager.SecretsManager, config Config, kms *strin
 				continue
 			}
 			secretValue = string(marshaledValue)
+		} else if secret.File != "" {
+			content, err := ioutil.ReadFile(secret.File)
+			if err != nil {
+				log.Printf("Failed to read file %s: %v", secret.File, err)
+				continue
+			}
+			secretValue = string(content)
 		} else {
 			secretValue = secret.PlainValue
 		}
