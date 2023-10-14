@@ -16,8 +16,9 @@ import (
 
 type Config struct {
 	Secrets map[string]struct {
-		Value map[string]string `yaml:"value"`
-		Tags  map[string]string `yaml:"tags"`
+		KeyValue   map[string]string `yaml:"key_value,omitempty"`
+		PlainValue string            `yaml:"plain_value,omitempty"`
+		Tags       map[string]string `yaml:"tags"`
 	} `yaml:"secrets"`
 }
 
@@ -81,10 +82,17 @@ func createAWSSession(profile, region string) (*session.Session, error) {
 
 func manageSecrets(svc *secretsmanager.SecretsManager, config Config, kms *string) {
 	for name, secret := range config.Secrets {
-		secretValue, err := json.Marshal(secret.Value)
-		if err != nil {
-			log.Printf("Failed to marshal secret %s: %v", name, err)
-			continue
+		var secretValue string
+
+		if secret.KeyValue != nil {
+			marshaledValue, err := json.Marshal(secret.KeyValue)
+			if err != nil {
+				log.Printf("Failed to marshal secret %s: %v", name, err)
+				continue
+			}
+			secretValue = string(marshaledValue)
+		} else {
+			secretValue = secret.PlainValue
 		}
 
 		var tags []*secretsmanager.Tag
