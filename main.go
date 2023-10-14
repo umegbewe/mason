@@ -46,6 +46,11 @@ func main() {
 		log.Printf("Failed to parse config: %v", err)
 	}
 
+	err = validateConfig(config)
+	if err != nil {
+		log.Fatalf("Invalid config: %v", err)
+	}
+
 	sess, err := createAWSSession(cli.Profile, cli.Region)
 
 	svc := secretsmanager.New(sess)
@@ -68,6 +73,25 @@ func parseFlags() CLIOpts {
 		Region:  *region,
 		KMSKey:  *kms,
 	}
+}
+
+func validateConfig(config Config) error {
+	for name, secret := range config.Secrets {
+		if secret.KeyValue != nil && secret.File != "" {
+			return fmt.Errorf("secret '%s' has both KeyValue and File set, which is not allowed", name)
+		}
+
+		if secret.KeyValue == nil && secret.File == "" && secret.PlainValue == "" {
+			return fmt.Errorf("secret '%s' must have either KeyValue, File, or PlainValue set", name)
+		}
+
+		for tagKey, tagValue := range secret.Tags {
+			if tagKey == "" || tagValue == "" {
+				return fmt.Errorf("secret '%s' has invalid tag. Tags must not be empty", name)
+			}
+		}
+	}
+	return nil
 }
 
 func createAWSSession(profile, region string) (*session.Session, error) {
@@ -103,7 +127,7 @@ func manageSecrets(svc *secretsmanager.SecretsManager, config Config, kms *strin
 			secretValue = secret.PlainValue
 		}
 
-		var tags []*secretsmanager.Tag
+		tags := make([]*secretsmanager.Tag, 0, len(secret.Tags))
 		for k, v := range secret.Tags {
 			tags = append(tags, &secretsmanager.Tag{
 				Key:   aws.String(k),
